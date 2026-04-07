@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rini Store - Premium Apps</title>
+  <style>
+    /* Global Styles */
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { 
+      margin: 0; 
+      font-family: 'Poppins', sans-serif; 
+      /* Background Hitam Premium */
+      background: #000; 
+      color: #fff; 
+      overflow-x: hidden; 
+      min-height: 100vh;
+    }
+
+    /* Animated Background Particles - Disesuaikan untuk BG Hitam */
+    .bg-animation {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      z-index: -1; overflow: hidden;
+    }
+    .circle {
+      position: absolute; background: rgba(255, 255, 255, 0.05);
+      border-radius: 50%; bottom: -100px; animation: rise 10s infinite ease-in;
+    }
+    @keyframes rise {
+      0% { transform: translateY(0) scale(1); opacity: 0; }
+      50% { opacity: 0.3; }
+      100% { transform: translateY(-1000px) scale(1.5); opacity: 0; }
+    }
+
+    /* Splash Screen - BG Hitam */
+    #splash { 
+      position: fixed; inset: 0; 
+      background: #000; 
+      display: flex; align-items: center; justify-content: center; 
+      flex-direction: column; z-index: 9999; transition: 0.8s; 
+    }
+    #splash.hidden { opacity: 0; pointer-events: none; transform: scale(1.2); }
+    .loader {
+      width: 50px; height: 50px; border: 5px solid #333;
+      border-top: 5px solid #ffca28; border-radius: 50%;
+      animation: spin 1s linear infinite; margin-top: 20px;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Header & Navbar - Transparan di BG Hitam */
+    .topbar { 
+      position: sticky; top: 0; z-index: 100; 
+      background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px);
+      padding: 20px 15px; border-bottom: 2px solid #ffca28;
+      text-align: center; border-radius: 0 0 25px 25px;
+    }
+    .topbar-title { 
+      font-size: 26px; font-weight: 900; color: #ffca28; 
+      /* Efek Nyala/Glow */
+      text-shadow: 0 0 15px rgba(255, 202, 40, 0.8), 0 0 30px rgba(255, 202, 40, 0.5); margin-bottom: 10px;
+    }
+    .search-box input { 
+      width: 100%; padding: 12px 20px; border: none; outline: none; 
+      border-radius: 30px; background: rgba(255,255,255,0.1); 
+      color: #fff; border: 1px solid rgba(255,255,255,0.2);
+    }
+    .search-box input::placeholder { color: #aaa; }
+
+    /* Flashy Banner */
+    .banner { 
+      margin: 20px 15px; background: linear-gradient(45deg, #ffca28, #ff8f00);
+      color: #000; border-radius: 20px; padding: 25px;
+      box-shadow: 0 10px 25px rgba(255, 143, 0, 0.5);
+      position: relative; overflow: hidden;
+    }
+    .banner::after {
+      content: ''; position: absolute; top: -50%; left: -50%;
+      width: 200%; height: 200%; background: rgba(255,255,255,0.3);
+      transform: rotate(45deg); animation: shine 3s infinite;
+    }
+    @keyframes shine { 0% { left: -100%; } 100% { left: 100%; } }
+
+    /* Section Titles */
+    .section-title { 
+      font-size: 20px; font-weight: 800; margin: 25px 15px 15px; 
+      color: #ffca28; display: flex; align-items: center; gap: 10px;
+      text-shadow: 0 0 10px rgba(255, 202, 40, 0.5);
+    }
+
+    /* Category Chips */
+    .cat-scroll { display: flex; gap: 12px; overflow-x: auto; padding: 5px 15px 15px; scrollbar-width: none; }
+    .cat-chip { 
+      flex: 0 0 auto; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 25px; padding: 10px 20px; color: #fff; font-weight: 600; cursor: pointer; transition: 0.3s;
+    }
+    .cat-chip.active { 
+      background: #ffca28; color: #000; border-color: #ffca28; 
+      transform: translateY(-3px); 
+      box-shadow: 0 0 15px rgba(255, 202, 40, 0.5);
+    }
+
+    /* Product Cards */
+    .products { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 0 15px 30px; }
+    .product-card { 
+      background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 25px; overflow: hidden; backdrop-filter: blur(5px);
+      transition: 0.4s; cursor: pointer; position: relative;
+    }
+    .product-card:hover { 
+      transform: translateY(-10px); 
+      border-color: #ffca28; 
+      box-shadow: 0 0 20px rgba(255, 202, 40, 0.3);
+    }
+    
+    .product-top { 
+      background: rgba(255,255,255,0.05); padding: 25px 10px; text-align: center;
+      position: relative;
+    }
+    .product-icon { 
+      font-size: 50px; 
+      /* Efek Nyala/Glow pada Ikon */
+      filter: drop-shadow(0 0 10px rgba(255, 202, 40, 0.8));
+    }
+    .badge { 
+      position: absolute; top: 10px; right: 10px; background: #ffca28; 
+      color: #000; font-size: 10px; font-weight: 900; padding: 4px 10px; border-radius: 10px;
+      box-shadow: 0 0 10px rgba(255, 202, 40, 0.5);
+    }
+
+    .product-body { padding: 15px; text-align: center; }
+    .product-name { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 5px; }
+    .product-price { 
+      color: #ffca28; font-size: 15px; font-weight: 800; 
+      text-shadow: 0 0 10px rgba(255, 202, 40, 0.5);
+    }
+
+    /* Checkout Panel */
+    .panel { 
+      margin: 15px; background: #fff; color: #333; border-radius: 30px; 
+      padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); animation: slideUp 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    }
+    @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    .plan-card { 
+      border: 2px solid #f0f0f0; border-radius: 20px; padding: 15px; 
+      margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; transition: 0.3s;
+    }
+    .plan-card.selected { border-color: #ffca28; background: #fff8e1; transform: scale(1.02); }
+
+    .main-btn { 
+      width: 100%; border: none; border-radius: 20px; padding: 18px; 
+      font-weight: 800; color: #000; background: linear-gradient(90deg, #ffca28, #ff8f00);
+      cursor: pointer; font-size: 16px; margin-top: 15px; 
+      box-shadow: 0 5px 20px rgba(255, 143, 0, 0.5);
+      transition: 0.3s;
+    }
+    .main-btn:hover {
+      box-shadow: 0 5px 25px rgba(255, 143, 0, 0.8);
+    }
+
+    .qris-container { text-align: center; }
+    .qris-img { width: 100%; max-width: 250px; border-radius: 15px; border: 5px solid #ffca28; margin: 15px 0; }
+    
+    .hidden { display: none; }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="bg-animation" id="bgAnim"></div>
+
+  <div id="splash">
+    <div style="font-size:40px; font-weight:900; color:#ffca28; letter-spacing:2px; text-shadow: 0 0 20px rgba(255, 202, 40, 0.8);">RINI STORE</div>
+    <div style="color:#fff; letter-spacing:4px; font-size:12px; margin-top:5px;">PREMIUM QUALITY ACCESS</div>
+    <div class="loader"></div>
+  </div>
+
+  <div class="topbar">
+    <div class="topbar-title">RINI STORE ✨</div>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Cari aplikasi premium kamu..." />
+    </div>
+  </div>
+
+  <div class="banner">
+    <div style="font-size:22px; font-weight:900;">MEGA SALE! 🚀</div>
+    <div style="font-size:14px; margin-top:5px; font-weight:600;">Dapatkan akses premium harga kaki lima, kualitas bintang lima!</div>
+  </div>
+
+  <div class="section-title">🔥 KATEGORI</div>
+  <div id="categoryTabs" class="cat-scroll"></div>
+
+  <div class="section-title">💎 KATALOG RINI STORE</div>
+  <div id="productList" class="products"></div>
+
+  <div id="detailPanel" class="panel hidden"></div>
+
+  <script>
+    // Create Background Particles
+    const bg = document.getElementById('bgAnim');
+    for(let i=0; i<20; i++) { 
+      let c = document.createElement('div');
+      c.className = 'circle';
+      let size = Math.random() * 40 + 5;
+      c.style.width = size + 'px';
+      c.style.height = size + 'px';
+      c.style.left = Math.random() * 100 + '%';
+      c.style.animationDelay = Math.random() * 10 + 's';
+      c.style.animationDuration = Math.random() * 5 + 7 + 's';
+      bg.appendChild(c);
+    }
+
+    const phone = "6285792218005"; 
+    const snd = new Audio("https://www.soundjay.com/buttons/sounds/button-16.mp3");
+    function playPop() { snd.currentTime = 0; snd.play().catch(()=>{}); }
+
+    const appData = [
+      { name: "Capcut Premium", icon: "🎬", category: "Editing", badge: "HOT", plans: [{ label: "Private 1 bulan", price: 20000 }, { label: "Sharing 1 bulan", price: 18500 }] },
+      { name: "Canva Pro", icon: "🎨", category: "Editing", badge: "BEST", plans: [{ label: "1 bulan", price: 6500 }, { label: "2 bulan", price: 9500 }, { label: "3 bulan", price: 13500 }, { label: "1 tahun", price: 31500 }] },
+      { name: "Netflix Premium", icon: "📺", category: "Streaming", badge: "1 USER", plans: [{ label: "1 hari", price: 7800 }, { label: "2 hari", price: 9500 }, { label: "3 hari", price: 11500 }, { label: "5 hari", price: 15500 }, { label: "7 hari", price: 17500 }, { label: "1 bulan", price: 21500 }] },
+      { name: "Netflix 2 User", icon: "👥", category: "Streaming", badge: "VALUE", plans: [{ label: "1 hari", price: 6000 }, { label: "7 hari", price: 17500 }, { label: "1 bulan", price: 25000 }] },
+      { name: "ChatGPT Plus", icon: "🤖", category: "AI", badge: "SMART", plans: [{ label: "Sharing No Garansi 1 bln", price: 21000 }, { label: "Sharing Garansi 7 hari", price: 8000 }, { label: "Sharing Garansi 1 bln", price: 28000 }] },
+      { name: "YouTube Premium", icon: "📽️", category: "Streaming", badge: "PROMO", plans: [{ label: "Family Plan", price: 9800 }, { label: "Individual Plan", price: 10500 }, { label: "Family Head", price: 15500 }] },
+      { name: "Viu Anti Limit", icon: "🍿", category: "Streaming", badge: "MURAH", plans: [{ label: "Private 1 bulan", price: 4000 }, { label: "Private 3 bulan", price: 10000 }, { label: "Private 1 tahun", price: 15500 }] },
+      { name: "GetContact Prem", icon: "🔍", category: "Utilitas", badge: "HOT", plans: [{ label: "1 bulan", price: 14000 }, { label: "2 bulan", price: 25000 }, { label: "GTC 1 bulan", price: 3000 }, { label: "GTC 2 bulan", price: 5500 }, { label: "GTC 3 bulan", price: 8000 }] },
+      { name: "Wink Premium", icon: "✨", category: "Editing", badge: "NEW", plans: [{ label: "7 hari", price: 4000 }] },
+      { name: "Alight Motion", icon: "🎞️", category: "Editing", badge: "BEST", plans: [{ label: "1 bulan", price: 5000 }, { label: "2 bulan", price: 9000 }, { label: "3 bulan", price: 14000 }] },
+      { name: "Apple Music", icon: "🍎", category: "Musik", badge: "HQ", plans: [{ label: "1 bulan", price: 14000 }, { label: "2 bulan", price: 18000 }, { label: "3 bulan", price: 20000 }] },
+      { name: "DramaBox", icon: "🎭", category: "Streaming", badge: "NEW", plans: [{ label: "1 bulan", price: 12000 }, { label: "2 bulan", price: 18500 }, { label: "3 bulan", price: 21000 }] },
+      { name: "Form", icon: "📝", category: "Utilitas", badge: "NEW", plans: [{ label: "1 bulan", price: 6000 }, { label: "2 bulan", price: 7500 }, { label: "3 bulan", price: 11000 }] },
+      { name: "Gemini AI", icon: "💎", category: "AI", badge: "PRO", plans: [{ label: "1 bulan", price: 12000 }, { label: "2 bulan", price: 24000 }, { label: "3 bulan", price: 35000 }] },
+      { name: "iQIYI Premium", icon: "🎋", category: "Streaming", badge: "ASIA", plans: [{ label: "1 bulan", price: 12000 }, { label: "2 bulan", price: 18500 }, { label: "3 bulan", price: 21000 }] },
+      { name: "Spotify Prem", icon: "🎵", category: "Musik", badge: "VIRAL", plans: [{ label: "1 bulan", price: 30000 }] },
+      { name: "Vidio", icon: "⚽", category: "Streaming", badge: "SPORTS", plans: [{ label: "1 bulan", price: 17000 }] },
+      { name: "Sewa Bot", icon: "🤖", category: "Utilitas", badge: "TOOL", plans: [{ label: "1 hari", price: 7000 }] },
+      { name: "Layanan Lain", icon: "📦", category: "Lainnya", badge: "LIST", plans: [{ label: "Kebesos 1 bln", price: 17000 }, { label: "Loklok 1 bln", price: 14000 }, { label: "Melolo 1 bln", price: 17000 }, { label: "Nokos 1 bln", price: 5000 }, { label: "Pay 1 bln", price: 7000 }, { label: "Reelshort 1 bln", price: 14000 }, { label: "Wibuku 1 bln", price: 15000 }] }
+    ];
+
+    const categories = ["Semua","Streaming","Musik","Editing","AI","Utilitas","Lainnya"];
+    let currentCategory = "Semua", searchText = "", selectedApp = null, selectedPlan = null, selectedEmail = "";
+
+    function formatRupiah(num){ return "Rp" + num.toLocaleString("id-ID"); }
+
+    function renderCategories(){
+      const tabs = document.getElementById("categoryTabs");
+      tabs.innerHTML = "";
+      categories.forEach(cat => {
+        const btn = document.createElement("button");
+        btn.className = "cat-chip" + (cat === currentCategory ? " active" : "");
+        btn.textContent = cat;
+        btn.onclick = () => { playPop(); currentCategory = cat; renderCategories(); renderProducts(); };
+        tabs.appendChild(btn);
+      });
+    }
+
+    function renderProducts(){
+      const list = document.getElementById("productList");
+      list.innerHTML = "";
+      appData.filter(app => (currentCategory === "Semua" || app.category === currentCategory) && app.name.toLowerCase().includes(searchText.toLowerCase())).forEach(app => {
+        const card = document.createElement("div");
+        card.className = "product-card";
+        card.innerHTML = `
+          <div class="product-top"><div class="badge">${app.badge}</div><div class="product-icon">${app.icon}</div></div>
+          <div class="product-body"><div class="product-name">${app.name}</div><div class="product-price">${formatRupiah(app.plans[0].price)}</div></div>
+        `;
+        card.onclick = () => { playPop(); openDetail(app); };
+        list.appendChild(card);
+      });
+    }
+
+    function openDetail(app){
+      selectedApp = app;
+      const panel = document.getElementById("detailPanel");
+      panel.classList.remove("hidden");
+      panel.innerHTML = `<h3>Pilih Paket ${app.name}</h3><div id="planList"></div><button id="toEmailBtn" class="main-btn hidden">Lanjut Pembayaran</button>`;
+      app.plans.forEach(plan => {
+        const div = document.createElement("div"); div.className = "plan-card";
+        div.innerHTML = `<span>${plan.label}</span><b>${formatRupiah(plan.price)}</b>`;
+        div.onclick = () => { playPop(); document.querySelectorAll(".plan-card").forEach(c => c.classList.remove("selected")); div.classList.add("selected"); selectedPlan = plan; document.getElementById("toEmailBtn").classList.remove("hidden"); };
+        document.getElementById("planList").appendChild(div);
+      });
+      document.getElementById("toEmailBtn").onclick = () => { playPop(); showEmailForm(); };
+      panel.scrollIntoView({behavior:"smooth"});
+    }
+
+    function showEmailForm(){
+      const panel = document.getElementById("detailPanel");
+      panel.innerHTML = `
+        <h3>Konfirmasi Akun</h3>
+        <p style="font-size:12px; color:#666;">Masukkan Gmail untuk pengiriman akses premium.</p>
+        <input type="email" id="gmailInput" style="width:100%;padding:15px;border-radius:15px;border:2px solid #ddd;outline:none" placeholder="rini-store@gmail.com" />
+        <button id="toCartBtn" class="main-btn">Dapatkan Sekarang</button>
+      `;
+      document.getElementById("toCartBtn").onclick = () => { 
+        playPop(); 
+        const val = document.getElementById("gmailInput").value; 
+        if(!val.includes('@')) return alert("Gunakan format email yang benar!"); 
+        selectedEmail = val; 
+        startQrisTimer(); 
+      };
+    }
+
+    function startQrisTimer(){
+      let time = 3;
+      const panel = document.getElementById("detailPanel");
+      panel.innerHTML = `<div style="text-align:center; padding: 20px;">Menyiapkan Invoice Keamanan...<div style="font-size:50px; font-weight:900; color:#ffca28; margin:10px 0; text-shadow: 0 0 15px rgba(255, 202, 40, 0.8);" id="t">3</div></div>`;
+      const itv = setInterval(() => { time--; if(document.getElementById("t")) document.getElementById("t").textContent = time; if(time <= 0){ clearInterval(itv); showQris(); } }, 1000);
+    }
+
+    function showQris(){
+      let wait = 10;
+      const qrisURL = "https://i.postimg.cc/RVQb9fnV/QRIS.jpg"; 
+
+      document.getElementById("detailPanel").innerHTML = `
+        <div class="qris-container">
+          <h3>Scan QRIS Rini Store</h3>
+          <img src="${qrisURL}" class="qris-img">
+          <div style="color:#ffca28; font-weight:800; text-shadow: 0 0 10px rgba(255, 202, 40, 0.5);" id="msg">Menuju WhatsApp dalam 10s...</div>
+          <p style="font-size:11px; color:#d32f2f; margin-top:10px; font-weight:bold;">Wajib Screenshot bukti bayar!</p>
+        </div>
+      `;
+      
+      const itv = setInterval(() => { wait--; if(document.getElementById("msg")) document.getElementById("msg").textContent = `Menuju WhatsApp dalam ${wait}s...`; if(wait <= 0){ clearInterval(itv); sendWA(); } }, 1000);
+    }
+
+    function sendWA(){
+      const txt = `Halo Rini Store ✨\n\nSaya mau konfirmasi order premium:\n\n📱 Aplikasi: ${selectedApp.name}\n📦 Paket: ${selectedPlan.label}\n📧 Email: ${selectedEmail}\n💰 Total: ${formatRupiah(selectedPlan.price)}\n\nBukti bayar terlampir (Screenshot)!`;
+      window.location.href = `https://wa.me/${6285792218005}?text=${encodeURIComponent(txt)}`;
+    }
+
+    document.getElementById("searchInput").oninput = (e) => { searchText = e.target.value; renderProducts(); };
+    renderCategories(); renderProducts();
+    setTimeout(() => document.getElementById("splash").classList.add("hidden"), 2000);
+  </script>
+</body>
+</html>
